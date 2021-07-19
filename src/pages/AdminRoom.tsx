@@ -1,26 +1,33 @@
-import { useParams } from 'react-router';
-import { useHistory } from 'react-router-dom';
-import deleteImg from '../assets/images/delete.svg';
-import checkImg from '../assets/images/check.svg';
-import answerImg from '../assets/images/answer.svg';
-import logoImg from '../assets/images/logo.svg';
+import { useHistory, useParams } from 'react-router-dom';
+import { FiSun, FiMoon } from 'react-icons/fi';
+
+import { useRoom } from '../hooks/useRoom';
+import { useTheme } from '../hooks/useTheme';
+
 import { Button } from '../components/Button';
 import { Question } from '../components/Question';
 import { RoomCode } from '../components/RoomCode';
-import { useRoom } from '../hooks/useRoom';
+
 import { database } from '../services/firebase';
-import '../styles/room.scss';
+
+import logoImg from '../assets/images/logo.svg';
+import deleteImg from '../assets/images/delete.svg';
+import checkImg from '../assets/images/check.svg';
+import answerImg from '../assets/images/answer.svg';
+
+import { Header, Main, QuestionList } from '../styles/room';
 
 type RoomParams = {
   id: string;
 }
 
-export function AdminRoom() {
-  // const { user } = useAuth();
-  const history = useHistory();
+export function AdminRoom() {  
   const params = useParams<RoomParams>();
   const roomId = params.id;
-  const {questions, title} = useRoom(roomId);
+  const history = useHistory();
+
+  const { title, questions } = useRoom(roomId);
+  const { theme, toggleTheme } = useTheme();
 
   async function handleEndRoom() {
     await database.ref(`rooms/${roomId}`).update({
@@ -39,34 +46,41 @@ export function AdminRoom() {
   async function handleCheckQuestionAsAnswered(questionId: string) {
     await database.ref(`rooms/${roomId}/questions/${questionId}`).update({
       isAnswered: true,
-    })
+    });
   }
-
+  
   async function handleHighlightQuestion(questionId: string) {
     await database.ref(`rooms/${roomId}/questions/${questionId}`).update({
-      isHighLighted: true,
-    })
+      isHighlighted: true,
+    });
   }
 
   return (
-    <div id="page-room">
-      <header>
+    <>
+      <Header>
         <div className="content">
           <img src={logoImg} alt="Letmeask" />
           <div>
+            <button className="themeSwitcher" onClick={toggleTheme}>
+              {theme.title === 'light' ? (
+                <FiMoon size={24} />
+              ) : (
+                <FiSun size={24} />
+              )}
+            </button>
             <RoomCode code={roomId} />
             <Button isOutlined onClick={handleEndRoom}>Encerrar sala</Button>
           </div>
         </div>
-      </header>
+      </Header>
 
-      <main className="content">
+      <Main>
         <div className="room-title">
           <h1>Sala {title}</h1>
-          { questions.length > 0 && <span>{questions.length} pergunta(s)</span>}
+          { questions.length > 0 && <span>{questions.length} pergunta(s)</span> }
         </div>
 
-        <div className="question-list">
+        <QuestionList>
           {questions.map(question => {
             return (
               <Question
@@ -74,7 +88,7 @@ export function AdminRoom() {
                 content={question.content}
                 author={question.author}
                 isAnswered={question.isAnswered}
-                isHighLighted={question.isHighLighted}
+                isHighlighted={question.isHighLighted}         
               >
                 {!question.isAnswered && (
                   <>
@@ -84,16 +98,14 @@ export function AdminRoom() {
                     >
                       <img src={checkImg} alt="Marcar pergunta como respondida" />
                     </button>
-
                     <button
                       type="button"
                       onClick={() => handleHighlightQuestion(question.id)}
                     >
                       <img src={answerImg} alt="Dar destaque à pergunta" />
-                  </button>
+                    </button>
                   </>
                 )}
-
                 <button
                   type="button"
                   onClick={() => handleDeleteQuestion(question.id)}
@@ -101,13 +113,10 @@ export function AdminRoom() {
                   <img src={deleteImg} alt="Remover pergunta" />
                 </button>
               </Question>
-            )
+            );
           })}
-        </div>
-      </main>
-    </div>
-  );
+        </QuestionList>
+      </Main>
+    </>
+  )
 }
-
-
-

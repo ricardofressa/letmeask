@@ -1,13 +1,21 @@
 import { FormEvent, useState } from 'react';
 import { useParams } from 'react-router';
-import logoImg from '../assets/images/logo.svg';
+import { FiSun, FiMoon } from 'react-icons/fi'
+
+import { useAuth } from '../hooks/useAuth';
+import { useRoom } from '../hooks/useRoom';
+
 import { Button } from '../components/Button';
 import { Question } from '../components/Question';
 import { RoomCode } from '../components/RoomCode';
-import { useAuth } from '../hooks/useAuth';
-import { useRoom } from '../hooks/useRoom';
+
 import { database } from '../services/firebase';
-import '../styles/room.scss';
+
+import logoImg from '../assets/images/logo.svg';
+
+import {Header, Main, Form, QuestionList} from '../styles/room';
+import { useTheme } from '../hooks/useTheme';
+
 
 
 
@@ -23,6 +31,7 @@ export function Room() {
 
   const { user } = useAuth();
   const {title, questions} = useRoom(roomId);
+  const { theme, toggleTheme } = useTheme();
 
   async function handleSendQuestion(event: FormEvent) {
     event.preventDefault();
@@ -63,41 +72,52 @@ export function Room() {
   }
 
   return (
-    <div id="page-room">
-      <header>
+    <>
+      <Header>
         <div className="content">
           <img src={logoImg} alt="Letmeask" />
-          <RoomCode code={roomId} />
+            <div>
+              <button className="themeSwitcher" onClick={toggleTheme}>
+                {theme.title === 'light' ? (
+                  <FiMoon size={24} />
+                ) : (
+                  <FiSun size={24} />
+                )}
+              </button>
+              <RoomCode code={roomId} />
+            </div>
         </div>
-      </header>
+      </Header>
 
-      <main className="content">
+      <Main>
         <div className="room-title">
           <h1>Sala {title}</h1>
-          { questions.length > 0 && <span>{questions.length} pergunta(s)</span>}
+          { questions.length > 0 && <span>{questions.length} pergunta(s)</span> }
         </div>
 
-        <form onSubmit={handleSendQuestion}>
-          <textarea placeholder="O que você quer perguntar?"
+        <Form onSubmit={handleSendQuestion}>
+          <textarea
+            placeholder="O que você quer perguntar?"
             onChange={event => setNewQuestion(event.target.value)}
-            value={newQuestion} 
+            value={newQuestion}
           />
-          
+
           <div className="form-footer">
-            {user ? (
-            <div className="user-info">
-              <img src={user.avatar} alt={user.name} />
-              <span>{user.name}</span>
-            </div>
+            { user ? (
+              <div className="user-info">
+                <img src={user.avatar} alt={user.name} />
+                <span>{user.name}</span>
+              </div>
             ) : (
-              <span>Para enviar uma pergunta, <button>faça seu login</button>.</span>
-            )}
+              <span>
+                Para enviar uma pergunta, <button>faça seu login</button>.
+              </span>
+            ) }
             <Button type="submit" disabled={!user}>Enviar pergunta</Button>
           </div>
+        </Form>
 
-        </form>
-
-        <div className="question-list">
+        <QuestionList>
           {questions.map(question => {
             return (
               <Question
@@ -105,7 +125,7 @@ export function Room() {
                 content={question.content}
                 author={question.author}
                 isAnswered={question.isAnswered}
-                isHighLighted={question.isHighLighted}
+                isHighlighted={question.isHighLighted}
               >
                 {!question.isAnswered && (
                   <button
@@ -123,8 +143,8 @@ export function Room() {
               </Question>
             );
           })}
-        </div>
-      </main>
-    </div>
+        </QuestionList>
+    </Main>
+  </>
   );
 }

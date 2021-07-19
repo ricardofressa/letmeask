@@ -8,7 +8,7 @@ import logoImg from '../assets/images/logo.svg';
 import { Button } from '../components/Button';
 import { database } from '../services/firebase';
 
-import '../styles/auth.scss';
+import { MainContent, PageAuthContainer } from '../styles/auth'
 
 
 export function NewRoom() {
@@ -34,7 +34,7 @@ export function NewRoom() {
   }
 
   return (
-    <div id="page-auth">
+    <PageAuthContainer>
       <aside>
         <img src={illustrationImg} alt="Ilustração simbolizando perguntas e respostas" />
         <strong>Crie salas de Q&amp;A ao-vivo</strong>
@@ -42,7 +42,7 @@ export function NewRoom() {
       </aside>
       
       <main>
-        <div className="main-content">
+        <MainContent>
           <img src={logoImg} alt="Letmeask" />
           <form onSubmit={handeCreateRoom}>
             <input 
@@ -58,8 +58,8 @@ export function NewRoom() {
           <p>
             Quer entrar em uma sala existente? <Link to="/">Clique aqui</Link>
           </p>
-        </div>
+        </MainContent>
       </main>
-    </div>
+    </PageAuthContainer>
   )
 }
